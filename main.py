@@ -24,7 +24,7 @@ LLM_MODEL_NAME = os.environ.get("LLM_MODEL_NAME")
 CHROMA_HOST = os.environ.get("CHROMA_DB_HOST")
 DATA_DIRECTORY = os.environ.get("RAG_DATA_DIR")
 CHUNK_LENGTH = os.environ.get("CHUNK_LENGTH")
-PORT = os.environ.get("PORT")
+PORT = int(os.getenv("PORT", 3000))
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
