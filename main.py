@@ -11,9 +11,11 @@ import docx
 import json
 import uuid
 from pypdf import PdfReader
-from google import genai
+# from google import genai
 import uvicorn
 from pydantic import BaseModel
+import google.generativeai as genai
+
 
 
 dotenv.load_dotenv()
@@ -32,7 +34,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 embed_model = SentenceTransformer(EMBED_MODEL_NAME)
 client = chromadb.PersistentClient(path="./vectorDB")
 
-llm_model = genai.Client()
+genai.configure(api_key=GEMINI_API_KEY)
+llm_model = genai.GenerativeModel(LLM_MODEL_NAME)
 
 collection = client.get_or_create_collection(name=CHROMA_HOST)
 
@@ -173,7 +176,7 @@ async def prompt(payload: PromptPayload):
         
         Based on the context provided above, generate a succint answer to the query above.
     """
-    response = llm_model.models.generate_content(model=LLM_MODEL_NAME, contents=prompt)
+    response = llm_model.generate_content(prompt)
 
     return {"answer": response.text, "context": context_texts}
 
