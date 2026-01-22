@@ -11,10 +11,10 @@ import docx
 import json
 import uuid
 from pypdf import PdfReader
-# from google import genai
+from google import genai
 import uvicorn
 from pydantic import BaseModel
-import google.generativeai as genai
+# import google.generativeai as genai
 
 
 
@@ -34,8 +34,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 embed_model = SentenceTransformer(EMBED_MODEL_NAME)
 client = chromadb.PersistentClient(path="./vectorDB")
 
-genai.configure(api_key=GEMINI_API_KEY)
-llm_model = genai.GenerativeModel(LLM_MODEL_NAME)
+
+llm_client = genai.Client(api_key=GEMINI_API_KEY)
+# genai.configure(api_key=GEMINI_API_KEY)
+# llm_model = genai.GenerativeModel(LLM_MODEL_NAME)
 
 collection = client.get_or_create_collection(name=CHROMA_HOST)
 
@@ -99,7 +101,9 @@ def extract_text(filename: str, content: bytes) -> str:
     except:
         return content.decode("latin-1", errors="ignore")
 
-
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the RAG Service"}
 
 
 @app.post("/upload")
@@ -145,6 +149,7 @@ async def upload(files: List[UploadFile] = File(...), context: Optional[str] = F
         metadatas=all_metadata
     )
     print(f"Stored files into chroma vector database")
+    return {"status": "success", "context": context, "num_chunks": len(all_ids)}
 
     
     
@@ -176,7 +181,7 @@ async def prompt(payload: PromptPayload):
         
         Based on the context provided above, generate a succint answer to the query above.
     """
-    response = llm_model.generate_content(prompt)
+    response = llm_client.models.generate_content(model=LLM_MODEL_NAME, contents=prompt)
 
     return {"answer": response.text, "context": context_texts}
 
