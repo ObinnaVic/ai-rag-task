@@ -8,13 +8,11 @@ import os
 import dotenv
 import re
 import docx
-import json
 import uuid
 from pypdf import PdfReader
 from google import genai
 import uvicorn
 from pydantic import BaseModel
-# import google.generativeai as genai
 
 
 
